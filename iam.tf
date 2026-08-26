@@ -178,14 +178,27 @@ resource "aws_iam_role_policy" "terraform_github" {
         Resource = "*"
       },
       {
-        Sid    = "IAM"
+        Sid    = "IAMRead"
         Effect = "Allow"
 
         Action = [
           "iam:GetRole",
           "iam:ListRolePolicies",
           "iam:ListAttachedRolePolicies",
-          "iam:GetRolePolicy",
+          "iam:GetRolePolicy"
+        ]
+
+        Resource = [
+          "arn:aws:iam::${var.aws_account_id}:role/AtlasEC2Role",
+          "arn:aws:iam::${var.aws_account_id}:role/AtlasGitHubDeployRole",
+          "arn:aws:iam::${var.aws_account_id}:role/AtlasTerraformRole"
+        ]
+      },
+      {
+        Sid    = "IAMWrite"
+        Effect = "Allow"
+
+        Action = [
           "iam:CreateRole",
           "iam:DeleteRole",
           "iam:UpdateAssumeRolePolicy",
