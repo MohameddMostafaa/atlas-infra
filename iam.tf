@@ -133,7 +133,13 @@ resource "aws_iam_role" "terraform_github" {
         Condition = {
           StringEquals = {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-            "token.actions.githubusercontent.com:sub" = "repo:MohameddMostafaa@41244098/atlas-infra@1346806408:ref:refs/heads/main"
+          }
+
+          StringLike = {
+            "token.actions.githubusercontent.com:sub" = [
+              "repo:MohameddMostafaa@41244098/atlas-infra@1346806408:ref:refs/heads/main",
+              "repo:MohameddMostafaa@41244098/atlas-infra@1346806408:pull_request"
+            ]
           }
         }
       }
