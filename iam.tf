@@ -114,6 +114,7 @@ resource "aws_iam_role_policy" "github_deployment_ssm" {
   })
 }
 
+
 resource "aws_iam_role" "terraform_github" {
   name = "AtlasTerraformRole"
 
@@ -146,6 +147,7 @@ resource "aws_iam_role" "terraform_github" {
     ]
   })
 }
+
 
 resource "aws_iam_role_policy" "terraform_github" {
   name = "AtlasTerraformInfrastructure"
@@ -200,6 +202,36 @@ resource "aws_iam_role_policy" "terraform_github" {
           "arn:aws:iam::${var.aws_account_id}:role/AtlasEC2Role",
           "arn:aws:iam::${var.aws_account_id}:role/AtlasGitHubDeployRole"
         ]
+      },
+      {
+        Sid    = "TerraformState"
+        Effect = "Allow"
+
+        Action = [
+          "s3:ListBucket"
+        ]
+
+        Resource = "arn:aws:s3:::atlas-terraform-state-034703319119"
+
+        Condition = {
+          StringLike = {
+            "s3:prefix" = [
+              "atlas/*"
+            ]
+          }
+        }
+      },
+      {
+        Sid    = "TerraformStateObjects"
+        Effect = "Allow"
+
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
+
+        Resource = "arn:aws:s3:::atlas-terraform-state-034703319119/atlas/*"
       }
     ]
   })
