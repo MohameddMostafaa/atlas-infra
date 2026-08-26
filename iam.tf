@@ -114,6 +114,7 @@ resource "aws_iam_role_policy" "github_deployment_ssm" {
   })
 }
 
+
 resource "aws_iam_role" "terraform_github" {
   name = "AtlasTerraformRole"
 
@@ -133,13 +134,20 @@ resource "aws_iam_role" "terraform_github" {
         Condition = {
           StringEquals = {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-            "token.actions.githubusercontent.com:sub" = "repo:MohameddMostafaa@41244098/atlas-infra@1346806408:ref:refs/heads/main"
+          }
+
+          StringLike = {
+            "token.actions.githubusercontent.com:sub" = [
+              "repo:MohameddMostafaa@41244098/atlas-infra@1346806408:ref:refs/heads/main",
+              "repo:MohameddMostafaa@41244098/atlas-infra@1346806408:pull_request"
+            ]
           }
         }
       }
     ]
   })
 }
+
 
 resource "aws_iam_role_policy" "terraform_github" {
   name = "AtlasTerraformInfrastructure"
@@ -170,14 +178,27 @@ resource "aws_iam_role_policy" "terraform_github" {
         Resource = "*"
       },
       {
-        Sid    = "IAM"
+        Sid    = "IAMRead"
         Effect = "Allow"
 
         Action = [
           "iam:GetRole",
           "iam:ListRolePolicies",
           "iam:ListAttachedRolePolicies",
-          "iam:GetRolePolicy",
+          "iam:GetRolePolicy"
+        ]
+
+        Resource = [
+          "arn:aws:iam::${var.aws_account_id}:role/AtlasEC2Role",
+          "arn:aws:iam::${var.aws_account_id}:role/AtlasGitHubDeployRole",
+          "arn:aws:iam::${var.aws_account_id}:role/AtlasTerraformRole"
+        ]
+      },
+      {
+        Sid    = "IAMWrite"
+        Effect = "Allow"
+
+        Action = [
           "iam:CreateRole",
           "iam:DeleteRole",
           "iam:UpdateAssumeRolePolicy",
@@ -194,6 +215,36 @@ resource "aws_iam_role_policy" "terraform_github" {
           "arn:aws:iam::${var.aws_account_id}:role/AtlasEC2Role",
           "arn:aws:iam::${var.aws_account_id}:role/AtlasGitHubDeployRole"
         ]
+      },
+      {
+        Sid    = "TerraformState"
+        Effect = "Allow"
+
+        Action = [
+          "s3:ListBucket"
+        ]
+
+        Resource = "arn:aws:s3:::atlas-terraform-state-034703319119"
+
+        Condition = {
+          StringLike = {
+            "s3:prefix" = [
+              "atlas/*"
+            ]
+          }
+        }
+      },
+      {
+        Sid    = "TerraformStateObjects"
+        Effect = "Allow"
+
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
+
+        Resource = "arn:aws:s3:::atlas-terraform-state-034703319119/atlas/*"
       }
     ]
   })

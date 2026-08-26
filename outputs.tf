@@ -1,3 +1,4 @@
+# Terraform outputs for the Atlas infrastructure.
 output "atlas_instance_id" {
   description = "ID of the Atlas EC2 instance"
   value       = aws_instance.atlas.id
