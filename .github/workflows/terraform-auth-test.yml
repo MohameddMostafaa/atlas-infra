@@ -12,11 +12,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Inspect OIDC token
-        uses: github/actions-oidc-debugger@main
+      - name: Inspect OIDC claims
+        env:
+          AUDIENCE: sts.amazonaws.com
+        run: |
+          TOKEN_JSON=$(curl -s \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=$AUDIENCE")
+
+          ID_TOKEN=$(echo "$TOKEN_JSON" | jq -r .value)
+
+          echo "$ID_TOKEN" |
+            cut -d '.' -f2 |
+            base64 -d 2>/dev/null |
+            jq -r
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::034703319119:role/AtlasTerraformRole
           aws-region: eu-central-1
