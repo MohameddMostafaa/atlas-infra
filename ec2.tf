@@ -15,6 +15,10 @@ resource "aws_instance" "atlas" {
   monitoring    = false
   ebs_optimized = false
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   tags = {
     Name = "atlas-server"
   }
